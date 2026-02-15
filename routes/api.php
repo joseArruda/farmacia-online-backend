@@ -4,15 +4,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\CartController;
 
-Route::get('/inventory', [InventoryController::class, 'index']);
-Route::get('/cart', [CartController::class, 'index']);
-Route::get('/inventory/{id}', [InventoryController::class, 'show']);
+Route::prefix('inventory')->group(function () {
+    Route::get('/', [InventoryController::class, 'index']);
+    Route::get('{id}', [InventoryController::class, 'show']);
+    Route::post('/', [InventoryController::class, 'store']);
+    Route::put('{id}', [InventoryController::class, 'update']);
+    Route::delete('{id}', [InventoryController::class, 'destroy']);
+});
 
-Route::post('/inventory', [InventoryController::class, 'store']);
-Route::post('/cart/add', [CartController::class, 'add']);
-
-Route::post('/inventory/{id}', [InventoryController::class, 'update']);
-Route::post('/inventory/{id}', [InventoryController::class, 'edit']);
-
-Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
-Route::delete('/cart/remove/{id}', [CartController::class, 'destroy']);
+Route::prefix('cart')->group(function () {
+    Route::post('/', [CartController::class, 'store']);
+    Route::get('/', [CartController::class, 'index']);
+    Route::delete('{id}', [CartController::class, 'destroy']);
+});
