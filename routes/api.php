@@ -15,6 +15,7 @@ Route::middleware(['throttle:60,1'])
     ->whereNumber('id')
     ->group(function () {
         Route::post('/', [CartController::class, 'store']);
+        Route::put('/{id}', [CartController::class, 'update']);
         Route::get('/', [CartController::class, 'index']);
         Route::delete('{id}', [CartController::class, 'destroy']);
 });

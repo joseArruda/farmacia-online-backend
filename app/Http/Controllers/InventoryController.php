@@ -18,9 +18,15 @@ class InventoryController extends Controller
     {
         $per_page = min($request->get('per_page',10),100);
         $products = Inventory::query()
-            ->select('id','name','description','stock','category','price','image')
+            ->select('id','name','description','stock','category','price','image');
+            if($request->has('category')){
+                $products->where('category', $request->category);
+            }
+
+        $products = $products
             ->orderBy('created_at', 'desc')
             ->paginate($per_page);
+             
         return response()->json([
             'success' => true,
             'data' => $products,
@@ -69,7 +75,7 @@ class InventoryController extends Controller
                 $validated['image'] = $request->file('image')
                 ->store('inventory','public');
             }
-            $inventory = update($validated);
+            $inventory->update($validated);
             DB::commit();
             return response()->json([
                 'success' => true,
