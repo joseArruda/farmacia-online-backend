@@ -16,7 +16,7 @@ class InventoryController extends Controller
     
     public function index(Request $request)
     {
-        $per_page = min($request->get('per_page',10),100);
+        $per_page = min($request->get('per_page',12),100);
         $products = Inventory::query()
             ->select('id','name','description','stock','category','price','image');
             if($request->has('category')){
