@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Inventory;
+use App\Models\Inventorymodel;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProductRequest;
@@ -17,7 +17,7 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         $per_page = min($request->get('per_page',12),100);
-        $products = Inventory::query()
+        $products = Inventorymodel::query()
             ->select('id','name','description','stock','category','price','image');
             if($request->has('category')){
                 $products->where('category', $request->category);
