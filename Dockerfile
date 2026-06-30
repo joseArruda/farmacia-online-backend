@@ -48,6 +48,10 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 # Link do storage
 RUN php artisan storage:link || true
 
+RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/apache2.conf
+
+RUN sed -i 's!/var/www/!/var/www/html/public/!g' /etc/apache2/apache2.conf
+
 EXPOSE 80
 
 CMD ["apache2-foreground"]
