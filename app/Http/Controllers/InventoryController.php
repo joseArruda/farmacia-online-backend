@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class InventoryController extends Controller
 {
@@ -39,9 +40,10 @@ class InventoryController extends Controller
         $validated = $request->validated();
 
         if($request->hasFile('image')){
-            $validated['image'] = $request->file('image')
-            ->store('inventory', 'public');
-        }
+    $validated['image'] = $request->file('image')
+        ->store('inventory', 'public');
+
+}
 
         $product = Inventory::create($validated);
 
