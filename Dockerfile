@@ -1,19 +1,16 @@
-FROM php:8.3-apache
+FROM php:8.2-apache
 
-# Instala dependências
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
     git \
     unzip \
     zip \
     libzip-dev \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    default-mysql-client \
-    && docker-php-ext-install pdo_mysql zip
+    libpng-dev
 
-# Instala o Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN docker-php-ext-install pdo pdo_mysql zip
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
@@ -21,24 +18,14 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-RUN cp .env.example .env || true
+RUN php artisan storage:link || true
 
-RUN php artisan key:generate --force || true
-
-RUN mkdir -p storage/framework/cache
-RUN mkdir -p storage/framework/sessions
-RUN mkdir -p storage/framework/views
-
-RUN chmod -R 777 storage bootstrap/cache
-
-# Configura Apache para usar a pasta public
-RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' \
-    /etc/apache2/sites-available/*.conf
+RUN chown -R www-data:www-data storage bootstrap/cache
 
 RUN a2enmod rewrite
 
+RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
+
 EXPOSE 80
 
-CMD php artisan migrate --force && \
-    php artisan storage:link || true && \
-    apache2-foreground
+CMD ["apache2-foreground"]
