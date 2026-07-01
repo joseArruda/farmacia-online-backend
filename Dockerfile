@@ -1,45 +1,32 @@
+# Usa uma imagem oficial do PHP com Apache
 FROM php:8.2-apache
 
-# dependências
-RUN apt-get update && apt-get install -y \
-    git unzip zip libzip-dev libpng-dev libonig-dev libxml2-dev \
-    && docker-php-ext-install pdo pdo_mysql zip
-
-# composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-WORKDIR /var/www/html/public
-
-COPY . .
-
-RUN composer install --no-dev --optimize-autoloader
-
+# Habilita o mod_rewrite do Apache (essencial para as rotas do Laravel)
 RUN a2enmod rewrite
 
-# 🔥 REMOVE SITE PADRÃO DO APACHE
-RUN a2dissite 000-default.conf
+# Instala dependências do sistema e extensões do PHP necessárias para o Laravel
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    zip \
+    unzip \
+    git \
+    && docker-php-ext-install pdo_mysql zip
 
-# 🔥 CRIA SITE NOVO APONTANDO DIRETO PARA /public
-RUN echo "<VirtualHost *:80>\n\
-    DocumentRoot /var/www/html/public\n\
-\n\
-    <Directory /var/www/html/public>\n\
-        AllowOverride All\n\
-        Require all granted\n\
-    </Directory>\n\
-\n\
-    ErrorLog \${APACHE_LOG_DIR}/error.log\n\
-    CustomLog \${APACHE_LOG_DIR}/access.log combined\n\
-</VirtualHost>" > /etc/apache2/sites-available/laravel.conf
+# Define o diretório de trabalho
+WORKDIR /var/www/html
 
-RUN a2ensite laravel.conf
+# Copia os arquivos do projeto
+COPY . .
 
-# permissões Laravel
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+# Copia sua configuração personalizada do Apache
+# (Crie este arquivo 000-default.conf na raiz do seu projeto com o conteúdo que você postou)
+COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
 
-RUN php artisan storage:link || true
+# Ajusta permissões para o Laravel
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Exponha a porta 80
 EXPOSE 80
 
+# O comando para iniciar o Apache (isso substitui a necessidade de definir no Render)
 CMD ["apache2-foreground"]
